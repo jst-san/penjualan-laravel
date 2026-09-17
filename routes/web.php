@@ -2,10 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('home');
-});
 
-Route::get("/", function() {
-    return view();
-});
+Route::livewire("/", "home");
+
+Route::livewire("/barang", "barang");
+
+Route::livewire("/transaksi", "transaksi");
+
+Route::livewire("/transaksi/create", "transaksi.create");
+
+Route::livewire("/transaksi/{id}", "transaksi.details");

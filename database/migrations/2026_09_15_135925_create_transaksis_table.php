@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("nomor_transaksi", 30);
             $table->date("tanggal");
-            $table->decimal("total", 15, 2);
+            $table->decimal("total", 15, 0);
             $table->timestamps();
         });
     }

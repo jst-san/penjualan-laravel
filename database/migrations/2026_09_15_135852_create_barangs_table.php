@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("kode_barang", 20);
             $table->string("nama_barang", 100);
-            $table->decimal("harga", 15, 2);
+            $table->decimal("harga", 15, 0);
             $table->integer("stok");
             $table->timestamps();
         });
