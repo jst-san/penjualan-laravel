@@ -15,7 +15,7 @@ class BarangController extends Controller
     {
         $barangs = Barang::all();
 
-        return response()->json(['success' => true, 'data' => $barangs], 200);
+        return response()->json($barangs, 200);
     }
 
     /**
@@ -23,30 +23,50 @@ class BarangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'nama_barang' => 'required|string|max:100',
+            'kode_barang' => 'required|string|max:20',
+            'harga' => 'required|numeric|min:0',
+            'stok' => 'required|numeric|min:0'
+        ]);
+
+        $barang = Barang::create($validated);
+
+        return response()->json(['message' => "Barang $barang->nama_barang berhasil ditambahkan", 'item' => $barang], 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Barang $barang)
     {
-        //
+        return response()->json($barang, 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Barang $barang)
     {
-        //
+        $validated = $request->validate([
+            'nama_barang' => 'required|string|max:100',
+            'kode_barang' => 'required|string|max:20',
+            'harga' => 'required|numeric|min:0',
+            'stok' => 'required|numeric|min:0'
+        ]);
+
+        $barang->update($validated);
+
+        return response()->json(['message' => "Barang $barang->nama_barang berhasil diedit"], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Barang $barang)
     {
-        //
+        $barang->delete();
+
+        return response()->noContent();
     }
 }

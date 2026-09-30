@@ -13,11 +13,11 @@ class TransaksiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         $transaksis = Transaksi::all();
 
-        return response()->json(['success' => true, 'data' => $transaksis], 200);
+        return response()->json($transaksis, 200);
     }
 
     /**
@@ -27,16 +27,16 @@ class TransaksiController extends Controller
     {
         $items = $request->items;
 
-        if (!$items) return response()->json(['success' => false, 'message' => 'Daftar barang kosong'], 400 );
+        if (!$items) return response()->json(['code' => 'BAD_REQUEST', 'message' => 'Daftar barang kosong'], 400);
 
         $barangs = Barang::select('id', 'stok', 'harga')->whereIn('id', array_map(fn($i) => $i['id'], $items))->get();
-        
+
         $details = [];
         $total = 0;
 
         $errors = [];
 
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $match = $barangs->find($item['id']);
             if (!$match) {
                 $errors = [...$errors, (object) ['id' => $item['id'], 'code' => 'ITEM_NOT_FOUND', 'message' => 'Barang ini tidak ditemukan']];
@@ -48,26 +48,26 @@ class TransaksiController extends Controller
 
             $subtotal = $item['qty'] * $match->harga;
 
-            $details = [...$details, ['barang_id' => $item['id'],'harga' => $match->harga, 'jumlah' => $item['qty'], 'subtotal' => $subtotal]];
+            $details = [...$details, ['barang_id' => $item['id'], 'harga' => $match->harga, 'jumlah' => $item['qty'], 'subtotal' => $subtotal]];
             $total += $subtotal;
         }
 
-        if (!empty($errors)) return response()->json(['errors' => $errors]);
+        if (!empty($errors)) return response()->json([[...$errors]], 409);
 
-        $nomor_transaksi = 'TRX-'.now()->format('Ymd').'-'.sprintf('%03d',Transaksi::whereDate('created_at', now()->today())->count() + 1);
+        $nomor_transaksi = 'TRX-' . now()->format('Ymd') . '-' . sprintf('%03d', Transaksi::whereDate('created_at', now()->today())->count() + 1);
         $tanggal = date('Y-m-d');
 
         $transaksi = Transaksi::create(['nomor_transaksi' => $nomor_transaksi, 'tanggal' => $tanggal, 'total' => $total]);
 
-        if (!$transaksi->id) return response()->json(['success' => false,'errors' => [['code' => 'INTERNAL_SERVER_ERROR', 'message' => 'Terjadi kesalahan, silahkan coba lagi']]], 500);
+        if (!$transaksi->id) return response()->json(['code' => 'INTERNAL_SERVER_ERROR', 'message' => 'Terjadi kesalahan, silahkan coba lagi'], 500);
 
         DetailTransaksi::insert(array_map(fn($d) => ['transaksi_id' => $transaksi->id, ...$d], $details));
 
-        foreach($details as $d) {
+        foreach ($details as $d) {
             Barang::where('id', $d['barang_id'])->decrement('stok', $d['jumlah']);
         }
 
-        return response()->json(['success' => true,'message' => "Transaksi $nomor_transaksi berhasil dibuat"], 201);
+        return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat"], 201);
     }
 
     /**
@@ -75,7 +75,7 @@ class TransaksiController extends Controller
      */
     public function show(Transaksi $transaksi)
     {
-        //
+        return response()->json($transaksi, 200);
     }
 
     /**
@@ -83,16 +83,24 @@ class TransaksiController extends Controller
      */
     public function update(Request $request, Transaksi $transaksi)
     {
-        //
+        $validated = $request->validate([
+            'nomor_transaksi' => 'required|string|max:30',
+            'tanggal' => 'required|string|max:20',
+            'total' => 'required|numeric|min:0',
+        ]);
+
+        $transaksi->update($validated);
+
+        return response()->json(['message' => "Transaksi $transaksi->nomor_transaksi berhasil diedit"], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Transaksi $transaksi)
     {
-        Transaksi::where('id', $id)->delete();
-        
-        return redirect()->back();
+        $transaksi->delete();
+
+        return response()->noContent();
     }
 }

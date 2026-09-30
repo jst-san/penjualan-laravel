@@ -1,15 +1,16 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\DetailTransaksiController;
 use App\Http\Controllers\Api\TransaksiController;
-use App\Http\Controllers\Api\BarangController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/transaksi', [TransaksiController::class, 'index']);
+Route::resource('barang', BarangController::class);
 
-Route::post('/transaksi', [TransaksiController::class, 'store']);
+Route::resource('transaksi', TransaksiController::class);
 
-Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);
+Route::resource('detail-transaksi', DetailTransaksiController::class);
 
-Route::get('/barang', [BarangController::class, 'index']);
+Route::get('/dashboard', [AdminController::class, 'dashboardData']);
