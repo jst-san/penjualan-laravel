@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\DetailTransaksi;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
@@ -27,47 +28,65 @@ class TransaksiController extends Controller
     {
         $items = $request->items;
 
-        if (!$items) return response()->json(['code' => 'BAD_REQUEST', 'message' => 'Daftar barang kosong'], 400);
+        if (empty($items) || !is_array($items)) {
+            return response()->json(['code' => 'BAD_REQUEST', 'message' => 'Daftar barang kosong'], 400);
+        }
 
-        $barangs = Barang::select('id', 'stok', 'harga')->whereIn('id', array_map(fn($i) => $i['id'], $items))->get();
+        $barangIds = array_unique(array_column($items, 'id'));
 
-        $details = [];
-        $total = 0;
+        return DB::transaction(function () use ($items, $barangIds) {
+            $barangs = Barang::whereIn('id', $barangIds)->lockForUpdate()->get()->keyBy('id');
 
-        $errors = [];
+            $details = [];
+            $total = 0;
+            $errors = [];
 
-        foreach ($items as $item) {
-            $match = $barangs->find($item['id']);
-            if (!$match) {
-                $errors = [...$errors, (object) ['id' => $item['id'], 'code' => 'ITEM_NOT_FOUND', 'message' => 'Barang ini tidak ditemukan']];
-                continue;
-            } else if ($item['qty'] > $match->stok) {
-                $errors = [...$errors, (object) ['id' => $item['id'], 'code' => 'STOK_EXCEEDED', 'message' => 'Stok barang ini tidak cukup']];
-                continue;
+            foreach ($items as $i) {
+                $barang = $barangs->get($i['id']);
+
+                if (!$barang) {
+                    $errors[] = ['id' => $i['id'], 'code' => 'ITEM_NOT_FOUND', 'message' => 'Barang tidak ditemukan'];
+                    continue;
+                }
+
+                if ($i['qty'] > $barang->stok) {
+                    $errors[] = ['id' => $i['id'], 'code' => 'STOK_EXCEEDED', 'message' => 'Stok barang tidak cukup'];
+                    continue;
+                }
+
+                $subtotal = $i['qty'] * $barang->harga;
+                $total += $subtotal;
+
+                $details[] = [
+                    'barang_id' => $barang->id,
+                    'harga' => $barang->harga,
+                    'jumlah' => $i['qty'],
+                    'subtotal' => $subtotal,
+                ];
             }
 
-            $subtotal = $item['qty'] * $match->harga;
+            if (!empty($errors)) {
+                DB::rollBack();
+                return response()->json($errors, 409);
+            }
 
-            $details = [...$details, ['barang_id' => $item['id'], 'harga' => $match->harga, 'jumlah' => $item['qty'], 'subtotal' => $subtotal]];
-            $total += $subtotal;
-        }
+            $nomor_transaksi = 'TRX-' . now()->format('Ymd') . '-' . sprintf('%03d', Transaksi::whereDate('created_at', today())->count() + 1);
 
-        if (!empty($errors)) return response()->json([[...$errors]], 409);
+            $transaksi = Transaksi::create([
+                'nomor_transaksi' => $nomor_transaksi,
+                'tanggal' => now()->format('Y-m-d'),
+                'total' => $total,
+            ]);
 
-        $nomor_transaksi = 'TRX-' . now()->format('Ymd') . '-' . sprintf('%03d', Transaksi::whereDate('created_at', now()->today())->count() + 1);
-        $tanggal = date('Y-m-d');
+            $detailData = array_map(fn($d) => ['transaksi_id' => $transaksi->id, ...$d], $details);
+            DetailTransaksi::insert($detailData);
 
-        $transaksi = Transaksi::create(['nomor_transaksi' => $nomor_transaksi, 'tanggal' => $tanggal, 'total' => $total]);
+            foreach ($details as $d) {
+                Barang::where('id', $d['barang_id'])->decrement('stok', $d['jumlah']);
+            }
 
-        if (!$transaksi->id) return response()->json(['code' => 'INTERNAL_SERVER_ERROR', 'message' => 'Terjadi kesalahan, silahkan coba lagi'], 500);
-
-        DetailTransaksi::insert(array_map(fn($d) => ['transaksi_id' => $transaksi->id, ...$d], $details));
-
-        foreach ($details as $d) {
-            Barang::where('id', $d['barang_id'])->decrement('stok', $d['jumlah']);
-        }
-
-        return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat"], 201);
+            return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat"], 201);
+        });
     }
 
     /**
