@@ -18,7 +18,7 @@ class TransaksiController extends Controller
     {
         $transaksis = Transaksi::all();
 
-        return response()->json($transaksis, 200);
+        return response()->json(['data' => $transaksis], 200);
     }
 
     /**
@@ -67,7 +67,7 @@ class TransaksiController extends Controller
 
             if (!empty($errors)) {
                 DB::rollBack();
-                return response()->json($errors, 409);
+                return response()->json(['errors' => $errors], 409);
             }
 
             $nomor_transaksi = 'TRX-' . now()->format('Ymd') . '-' . sprintf('%03d', Transaksi::whereDate('created_at', today())->count() + 1);
@@ -85,16 +85,17 @@ class TransaksiController extends Controller
                 Barang::where('id', $d['barang_id'])->decrement('stok', $d['jumlah']);
             }
 
-            return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat"], 201);
+            return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat", 'data' => $transaksi], 201);
         });
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Transaksi $transaksi)
+    public function show($id)
     {
-        return response()->json($transaksi, 200);
+        $transaksi = Transaksi::with('detailTransaksis.barang')->findOrFail($id);
+        return response()->json(['data' => $transaksi], 200);
     }
 
     /**
@@ -110,7 +111,7 @@ class TransaksiController extends Controller
 
         $transaksi->update($validated);
 
-        return response()->json(['message' => "Transaksi $transaksi->nomor_transaksi berhasil diedit"], 200);
+        return response()->json(['message' => "Transaksi $transaksi->nomor_transaksi berhasil diedit", 'data' => $transaksi], 200);
     }
 
     /**

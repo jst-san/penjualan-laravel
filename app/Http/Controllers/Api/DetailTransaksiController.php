@@ -17,7 +17,7 @@ class DetailTransaksiController extends Controller
     {
         $detailTransaksis = DetailTransaksi::all();
 
-        return response()->json($detailTransaksis, 200);
+        return response()->json(['data' => $detailTransaksis], 200);
     }
 
     /**
@@ -41,7 +41,7 @@ class DetailTransaksiController extends Controller
         $barang->decrement('stok', $detailTransaksi->jumlah);
         $transaksi->increment('total', $detailTransaksi->subtotal);
 
-        return response()->json(['message' => "Detail transaksi berhasil dibuat", 'item' => $detailTransaksi], 200);
+        return response()->json(['message' => "Detail transaksi berhasil dibuat", 'data' => $detailTransaksi], 200);
     }
 
     /**
@@ -49,7 +49,7 @@ class DetailTransaksiController extends Controller
      */
     public function show(DetailTransaksi $detailTransaksi)
     {  
-        return response()->json($detailTransaksi, 200);
+        return response()->json(['data' => $detailTransaksi], 200);
     }
 
     /**
@@ -66,7 +66,7 @@ class DetailTransaksiController extends Controller
 
         $detailTransaksi->update($validated);
 
-        return response()->json(['message' => "Detail transaksi dengan id = $detailTransaksi->id berhasil diedit", 'item' => $detailTransaksi], 200);
+        return response()->json(['message' => "Detail transaksi dengan id = $detailTransaksi->id berhasil diedit", 'data' => $detailTransaksi], 200);
     }
 
     /**

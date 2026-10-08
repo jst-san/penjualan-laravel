@@ -39,10 +39,12 @@
         let delay = null;
 
         async function getBarangs() {
-            const res = await fetch('/api/barang').then((r) => r.json());
+            const res = await fetch('/api/barang');
+
+            const data = await res.json();
 
             if (res.success) {
-                barangs = res.data.map((d) => ({...d,harga: Number(d.harga), qty: 0, subtotal: 0}));
+                barangs = data.map((d) => ({...d,harga: Number(d.harga), qty: 0, subtotal: 0}));
             } else {
                 alert('Terjadi masalah!');
             }

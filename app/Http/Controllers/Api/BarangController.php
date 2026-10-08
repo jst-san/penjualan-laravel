@@ -15,7 +15,7 @@ class BarangController extends Controller
     {
         $barangs = Barang::all();
 
-        return response()->json($barangs, 200);
+        return response()->json(['data' => $barangs], 200);
     }
 
     /**
@@ -32,7 +32,7 @@ class BarangController extends Controller
 
         $barang = Barang::create($validated);
 
-        return response()->json(['message' => "Barang $barang->nama_barang berhasil ditambahkan", 'item' => $barang], 201);
+        return response()->json(['message' => "Barang $barang->nama_barang berhasil ditambahkan", 'data' => $barang], 201);
     }
 
     /**
@@ -40,7 +40,7 @@ class BarangController extends Controller
      */
     public function show(Barang $barang)
     {
-        return response()->json($barang, 200);
+        return response()->json(['data' => $barang], 200);
     }
 
     /**
@@ -57,7 +57,7 @@ class BarangController extends Controller
 
         $barang->update($validated);
 
-        return response()->json(['message' => "Barang $barang->nama_barang berhasil diedit"], 200);
+        return response()->json(['message' => "Barang $barang->nama_barang berhasil diedit", 'data' => $barang], 200);
     }
 
     /**
