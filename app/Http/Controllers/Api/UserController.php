@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     public function index(Request $request) {
-        return $request->user();
+        return response()->json(['data' => $request->user()]);
     }
 
     public function login(Request $request)
