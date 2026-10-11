@@ -15,6 +15,6 @@ class AdminController extends Controller
         $today_transaksis = DB::table('transaksis')->where('tanggal', date('Y-m-d'))->get();
 
 
-        return response()->json(['success' => true, 'data' => ['barangsCount' => $barangs_count, 'transaksisCount' => $transaksis_count, 'transaksisTotal' => $transaksis_total, 'todayTransaksis' => $today_transaksis]], 200);
+        return response()->json(['data' => ['barangsCount' => $barangs_count, 'transaksisCount' => $transaksis_count, 'transaksisTotal' => $transaksis_total, 'todayTransaksis' => $today_transaksis]], 200);
     }
 }

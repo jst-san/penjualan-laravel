@@ -14,11 +14,14 @@ class TransaksiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transaksis = Transaksi::all();
+        $per_page = $request->query("per_page", 10);
+        $order_by = $request->query("order_by", "id");
 
-        return response()->json(['data' => $transaksis], 200);
+        $transaksis = Transaksi::orderBy($order_by)->paginate($per_page);
+
+        return response()->json($transaksis, 200);
     }
 
     /**
@@ -45,12 +48,12 @@ class TransaksiController extends Controller
                 $barang = $barangs->get($i['id']);
 
                 if (!$barang) {
-                    $errors[] = ['id' => $i['id'], 'code' => 'ITEM_NOT_FOUND', 'message' => 'Barang tidak ditemukan'];
+                    $errors[$i['id']] = ['id' => $i['id'], 'code' => 'ITEM_NOT_FOUND', 'message' => 'Barang tidak ditemukan'];
                     continue;
                 }
 
                 if ($i['qty'] > $barang->stok) {
-                    $errors[] = ['id' => $i['id'], 'code' => 'STOK_EXCEEDED', 'message' => 'Stok barang tidak cukup'];
+                    $errors[$i['id']] = ['id' => $i['id'], 'code' => 'OUT_OF_STOCK', 'message' => 'Stok barang tidak cukup'];
                     continue;
                 }
 
@@ -92,7 +95,7 @@ class TransaksiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(string $id)
     {
         $transaksi = Transaksi::with('detailTransaksis.barang')->findOrFail($id);
         return response()->json(['data' => $transaksi], 200);

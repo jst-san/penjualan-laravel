@@ -11,11 +11,14 @@ class BarangController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $barangs = Barang::all();
+        $per_page = $request->query("per_page", 10);
+        $order_by = $request->query("order_by", "id");
 
-        return response()->json(['data' => $barangs], 200);
+        $barangs = Barang::orderBy($order_by)->paginate($per_page);
+
+        return response()->json($barangs, 200);
     }
 
     /**
