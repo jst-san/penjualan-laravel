@@ -29,8 +29,29 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'karyawan',
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Indicate that the user is a superadmin.
+     */
+    public function superadmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'superadmin',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an employee.
+     */
+    public function karyawan(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'karyawan',
+        ]);
     }
 
     /**
