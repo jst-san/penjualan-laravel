@@ -13,23 +13,26 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::resource('users', UserController::class);
 
     Route::get('/user', [UserController::class, 'current']);
 
     Route::post('/logout', [UserController::class, 'logout']);
-    
-    Route::resource('barang', BarangController::class);
-    
-    Route::resource('transaksi', TransaksiController::class);
-    
-    Route::resource('detail-transaksi', DetailTransaksiController::class);
 
-    Route::get('/dashboard/best_seller', [DashboardController::class, 'best_seller']);
+    Route::middleware('role:superadmin')->group(function () {
+        Route::resource('users', UserController::class);
 
-    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+        Route::resource('barang', BarangController::class);
 
-    Route::get('/dashboard/low_stocks', [DashboardController::class, 'low_stocks']);
+        Route::resource('transaksi', TransaksiController::class);
 
-    Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
+        Route::resource('detail-transaksi', DetailTransaksiController::class);
+
+        Route::get('/dashboard/best_seller', [DashboardController::class, 'best_seller']);
+
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+        Route::get('/dashboard/low_stocks', [DashboardController::class, 'low_stocks']);
+
+        Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
+    });
 });
