@@ -25,3 +25,11 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/.claude
+/.agents
+CLAUDE.md
+AGENTS.md
+opencode.json
+PRD.md
+.mcp.json
+boost.json
