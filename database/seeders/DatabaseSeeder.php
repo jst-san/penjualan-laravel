@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@rpl.com',
                 'name'     => 'Admin System',
                 'password' => Hash::make('12345678'),
+                'role' => 'superuser'
             ]
         );
     }
