@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,13 +17,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate(
+        User::updateOrCreate(
+            ['email' => 'superuser@rpl.com'],
             [
-                'email' => 'admin@rpl.com',
-                'name'     => 'Admin System',
-                'password' => Hash::make('12345678'),
-                'role' => 'superuser'
-            ]
+                'name' => 'Superuser',
+                'password' => Hash::make('password'),
+                'role' => 'superuser',
+            ],
+        );
+
+        User::updateOrCreate(
+            ['email' => 'karyawan@rpl.com'],
+            [
+                'name' => 'Karyawan',
+                'password' => Hash::make('password'),
+                'role' => 'karyawan',
+            ],
         );
     }
 }

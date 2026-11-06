@@ -23,7 +23,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::resource('barang', BarangController::class);
 
-        Route::resource('transaksi', TransaksiController::class);
+        Route::post('/transaksi', [TransaksiController::class, 'store']);
+
+        Route::put('/transaksi/{transaksi}', [TransaksiController::class, 'update']);
+
+        Route::delete('/transaksi/{transaksi}', [TransaksiController::class, 'destroy']);
 
         Route::resource('detail-transaksi', DetailTransaksiController::class);
 
@@ -34,5 +38,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/low_stocks', [DashboardController::class, 'low_stocks']);
 
         Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
+    });
+
+    Route::middleware('role:karyawan,superuser')->group(function() {
+        Route::get('/transaksi', [TransaksiController::class, 'index']);
+
+        Route::get('/transaksi/{id}', [TransaksiController::class, 'show']);
     });
 });

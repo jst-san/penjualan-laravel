@@ -33,7 +33,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|min:3', 'email' => 'required|email', 'password' => 'required|string|min:8']);
+        $validated = $request->validate(['name' => 'required|string|min:3', 'email' => 'required|email', 'password' => 'required|string|min:8', 'role' => 'required|in:karyawan,superuser']);
 
         $user = User::where('email', $validated['email'])->first();
 
@@ -43,7 +43,7 @@ class UserController extends Controller
 
         $hashed = Hash::make($validated['password']);
 
-        $user = User::create(['name' => $validated['name'], 'email' => $validated['email'], 'password' => $hashed]);
+        $user = User::create(['name' => $validated['name'], 'role' => $validated['role'],'email' => $validated['email'], 'password' => $hashed]);
 
         return response()->json(['data' => $user], 201);
     }
@@ -65,7 +65,8 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
-    public function show(User $user) {
+    public function show(User $user)
+    {
         return response()->json(['data' => $user]);
     }
 
