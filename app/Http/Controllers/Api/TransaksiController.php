@@ -18,8 +18,11 @@ class TransaksiController extends Controller
     {
         $per_page = $request->query("per_page", 10);
         $order_by = $request->query("order_by", "id");
+        $search = $request->query("search", "");
 
-        $transaksis = Transaksi::orderBy($order_by)->paginate($per_page);
+        $transaksis = Transaksi::whereAny(["nomor_transaksi", "tanggal", "total"], "like", "%$search%")
+            ->orderBy($order_by)
+            ->paginate($per_page);
 
         return response()->json($transaksis, 200);
     }

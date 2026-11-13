@@ -59,8 +59,9 @@ class UserController extends Controller
     {
         $per_page = $request->query("per_page", 10);
         $order_by = $request->query("order_by", "id");
+        $search = $request->query("search", "");
 
-        $users = User::orderBy($order_by)->paginate($per_page);
+        $users = User::whereAny(["name", "email", "role"], "like", "%$search%")->orderBy($order_by)->paginate($per_page);
 
         return response()->json($users, 200);
     }
