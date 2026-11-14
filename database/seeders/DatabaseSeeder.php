@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -34,5 +33,8 @@ class DatabaseSeeder extends Seeder
                 'role' => 'karyawan',
             ],
         );
+
+        (new BarangSeeder)->run();
+        (new TransaksiSeeder)->run();
     }
 }

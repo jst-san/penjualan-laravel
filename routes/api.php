@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DetailTransaksiController;
@@ -10,13 +11,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::post('/login', [UserController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/user', [UserController::class, 'current']);
+    Route::get('/user', [AuthController::class, 'getUser']);
 
-    Route::post('/logout', [UserController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::middleware('role:superuser')->group(function () {
         Route::resource('users', UserController::class);
@@ -40,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
     });
 
-    Route::middleware('role:karyawan,superuser')->group(function() {
+    Route::middleware('role:karyawan,superuser')->group(function () {
         Route::get('/transaksi', [TransaksiController::class, 'index']);
 
         Route::get('/transaksi/{id}', [TransaksiController::class, 'show']);
