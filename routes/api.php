@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::post('/user/update-picture', [UserController::class, 'updatePicture']);
+
     Route::middleware('role:superuser')->group(function () {
         Route::resource('users', UserController::class);
 

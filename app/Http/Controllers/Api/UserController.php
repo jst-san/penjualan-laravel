@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -22,7 +23,7 @@ class UserController extends Controller
 
         $hashed = Hash::make($validated['password']);
 
-        $user = User::create(['name' => $validated['name'], 'role' => $validated['role'],'email' => $validated['email'], 'password' => $hashed]);
+        $user = User::create(['name' => $validated['name'], 'role' => $validated['role'], 'email' => $validated['email'], 'password' => $hashed]);
 
         return response()->json(['data' => $user], 201);
     }
@@ -62,5 +63,30 @@ class UserController extends Controller
         $user->delete();
 
         return response()->noContent();
+    }
+
+    public function updatePicture(Request $request)
+    {
+        $request->validate(['picture' => 'required|file|mimes:png,jpg,jpeg,webp|max:2048']);
+
+        $picture = $request->file('picture');
+
+        if (!$picture) {
+            return response()->json(['errors' => ['picture' => 'Foto tidak boleh kosong']], 400);
+        }
+
+        $filename = bin2hex(random_bytes(16)).".{$picture->extension()}";
+
+        $user = $request->user();
+
+        $prev = str_replace('http://localhost:8000/storage', '', $user->picture);
+
+        Storage::disk('public')->putFileAs('/images/', $picture, $filename);
+        
+        Storage::disk('public')->delete($prev);
+        
+        $user->update(['picture' => "http://localhost:8000/storage/images/$filename"]);
+
+        return response()->json(['data' => $user]);
     }
 }
