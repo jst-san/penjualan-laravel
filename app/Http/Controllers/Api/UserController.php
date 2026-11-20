@@ -78,14 +78,16 @@ class UserController extends Controller
         $filename = bin2hex(random_bytes(16)).".{$picture->extension()}";
 
         $user = $request->user();
+        
+        $app_url = getenv('APP_URL');
 
-        $prev = str_replace('http://localhost:8000/storage', '', $user->picture);
+        $prev = str_replace($app_url.'/storage', '', $user->picture);
 
         Storage::disk('public')->putFileAs('/images/', $picture, $filename);
         
         Storage::disk('public')->delete($prev);
-        
-        $user->update(['picture' => "http://localhost:8000/storage/images/$filename"]);
+
+        $user->update(['picture' => $app_url."/storage/images/$filename"]);
 
         return response()->json(['data' => $user]);
     }

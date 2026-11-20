@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\DetailTransaksi;
 use App\Models\Transaksi;
+use App\Services\MidtransServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Midtrans\Notification;
 
 class TransaksiController extends Controller
 {
@@ -32,7 +34,10 @@ class TransaksiController extends Controller
      */
     public function store(Request $request)
     {
+        $validated = $request->validate(['payment_method' => 'string|in:tunai,midtrans|required']);
+
         $items = $request->items;
+        $payment_method = $validated['payment_method'];
 
         if (empty($items) || !is_array($items)) {
             return response()->json(['code' => 'BAD_REQUEST', 'message' => 'Daftar barang kosong'], 400);
@@ -40,7 +45,7 @@ class TransaksiController extends Controller
 
         $barangIds = array_unique(array_column($items, 'id'));
 
-        return DB::transaction(function () use ($items, $barangIds) {
+        return DB::transaction(function () use ($items, $barangIds, $payment_method) {
             $barangs = Barang::whereIn('id', $barangIds)->lockForUpdate()->get()->keyBy('id');
 
             $details = [];
@@ -91,7 +96,18 @@ class TransaksiController extends Controller
                 Barang::where('id', $d['barang_id'])->decrement('stok', $d['jumlah']);
             }
 
-            return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat", 'data' => $transaksi], 201);
+            $snapToken = null;
+
+            if ($payment_method == 'online') {
+                $midtrans = new MidtransServices;
+
+                $snapToken = $midtrans->useSnap([
+                    'transaction_details' => ['order_id' => $transaksi->id, 'gross_amount' => 0],
+                    'item_details' => array_map(fn ($i) => ['quantity' => $i['jumlah'], 'price' => $i['harga']] , $detailData)
+                ]);
+            }
+
+            return response()->json(['message' => "Transaksi $nomor_transaksi berhasil dibuat", 'data' => $transaksi, 'snapToken' => $snapToken], 201);
         });
     }
 
@@ -128,5 +144,18 @@ class TransaksiController extends Controller
         $transaksi->delete();
 
         return response()->noContent();
+    }
+
+    public function notificationHandler(Request $request) 
+    {
+        $notif = new Notification;
+
+        // $fraud = $notif->fraud_status;
+        // $status = $notif->transaction_status;
+
+        print($notif);
+        dd($request);
+
+        return response()->json($request);
     }
 }

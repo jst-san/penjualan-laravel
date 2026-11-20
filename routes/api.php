@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::post('/transaksi/notification', [TransaksiController::class, 'notificationHandler']);
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user', [AuthController::class, 'getUser']);
