@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetailTransaksi extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['transaksi_id', 'barang_id', 'harga', 'jumlah', 'subtotal'];
 
     public function barang() {

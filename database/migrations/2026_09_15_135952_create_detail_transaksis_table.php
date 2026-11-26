@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal("harga", 15, 0);
             $table->integer("jumlah");
             $table->decimal("subtotal", 15, 0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('role', ['superuser', 'karyawan']);
             $table->string('picture')->nullable();
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
 
